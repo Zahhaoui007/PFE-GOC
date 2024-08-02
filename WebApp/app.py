@@ -6,10 +6,10 @@ from sklearn.preprocessing import LabelEncoder
 app = Flask(__name__)
 
 # Load the trained model
-model = joblib.load('apple_storage_model.pkl')
+model = joblib.load('C:\\Users\\hp\\Documents\\stag\\PFE-GOC\\WebApp\\Apple_storage_model.pkl')
 
 # Load the LabelEncoder
-encoder = joblib.load('label_encoder.pkl')
+label_encoder = joblib.load('C:\\Users\\hp\\Documents\\stag\\PFE-GOC\\WebApp\\label_encoder.pkl')
 
 @app.route('/')
 def index():
@@ -22,7 +22,7 @@ def predict():
         quantity_kg = float(request.form['quantity_kg'])
         
         # Encode apple type
-        encoded_apple_type = encoder.transform([apple_type])[0]
+        encoded_apple_type = label_encoder.transform([apple_type])[0]
         
         # Create a DataFrame
         input_data = pd.DataFrame([[encoded_apple_type, quantity_kg]], columns=['Apple_Type', 'Quantity_kg'])
