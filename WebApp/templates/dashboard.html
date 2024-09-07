@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <a href="/logout">Logout</a>
+    <button onclick="location.href='/predict'">Prediction</button>
+    <h2>User List</h2>
+    <ul>
+    {% if users %}
+        {% for user in users %}
+            <li>{{ user.email }} - {{ user.role }}</li>
+        {% endfor %}
+    {% else %}
+        <li>No users found.</li>
+    {% endif %}
+    </ul>
+</body>
+</html>

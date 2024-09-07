@@ -1,82 +1,88 @@
-from flask import Flask, redirect, request, jsonify, render_template
+import os
+from flask import Flask, redirect, request, jsonify, render_template, session, url_for
 import pandas as pd
 import joblib
-from requests import session
+from requests import Session as requests_session  # Renommage de l'import
 from sklearn.preprocessing import LabelEncoder
 from supabase import create_client, Client
+
 # Configurations de Supabase
 URL = 'https://zjflooqiypnrqvcbfisy.supabase.co'  # Remplacez avec votre URL de projet
-KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZmxvb3FpeXBucnF2Y2JmaXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTgwMTk4MjYsImV4cCI6MjAzMzU5NTgyNn0.jQvsKl0aN8TCICavH0TT0U5j_cClEu7gMsiqJpzgG0E'  # Remplacez avec votre clé anon
+KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZmxvb3FpeXBucnF2Y2JmaXN5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxODAxOTgyNiwiZXhwIjoyMDMzNTk1ODI2fQ.gSV-IFIsajz9krhvb2Zq7pwhT57aQS60kepL_nWF7uQ'  # Remplacez avec votre clé anon
 supabase: Client = create_client(URL, KEY)
+
+model = joblib.load(r'C:\Users\WD\Documents\DERASSA\3eme annee\Frigoo\goc\WebAPP\Apple_storage_model.pkl')
+label_encoder = joblib.load(r'C:\Users\WD\Documents\DERASSA\3eme annee\Frigoo\goc\WebAPP\label_encoder.pkl')
+
 app = Flask(__name__)
-
-# Load the trained model
-model = joblib.load('C:\\Users\\hp\\Documents\\stag\\PFE-GOC\\WebApp\\Apple_storage_model.pkl')
-
-# Load the LabelEncoder
-label_encoder = joblib.load('C:\\Users\\hp\\Documents\\stag\\PFE-GOC\\WebApp\\label_encoder.pkl')
+app.secret_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZmxvb3FpeXBucnF2Y2JmaXN5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxODAxOTgyNiwiZXhwIjoyMDMzNTk1ODI2fQ.gSV-IFIsajz9krhvb2Zq7pwhT57aQS60kepL_nWF7uQ' 
 
 @app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    try:
-        apple_type = request.form['apple_type']
-        quantity_kg = float(request.form['quantity_kg'])
-        
-        # Encode apple type
-        encoded_apple_type = label_encoder.transform([apple_type])[0]
-        
-        # Create a DataFrame
-        input_data = pd.DataFrame([[encoded_apple_type, quantity_kg]], columns=['Apple_Type', 'Quantity_kg'])
-        
-        # Make prediction
-        prediction = model.predict(input_data)
-        response = {
-            'optimal_temperature': prediction[0][0],
-            'optimal_humidity': prediction[0][1],
-            'optimal_co2_percent': prediction[0][2],
-            'optimal_o2_percent': prediction[0][3]
-        }
-        return render_template('result.html', response=response)
-    except Exception as e:
-        return jsonify({'error': str(e)})
+def home():
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print("Login route accessed") 
     if request.method == 'POST':
+        print("POST request received")  
         email = request.form['email']
         password = request.form['password']
-        user = supabase.auth.sign_in(email=email, password=password)
-        if user:
-            user_id = user['user'].id
-            role_data = supabase.table('AdminRole').select('Role').eq('ID', user_id).execute()
-            if role_data.data:
-                session['role'] = role_data.data[0]['Role']
-                session['user_id'] = user_id
-                if session['role'] == 'admin':
-                    return redirect('/dashboard')
+        print(f"Email: {email}")  
+        try:
+            print("Attempting to sign in")  # Debug log
+            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            user = response.user
+            if user:
+                user_id = user.id  # Get the user ID dynamically
+                print(f"User logged in: {user_id}")  # Debug log
+
+                print(f"Checking admin status for user: {user_id}")  # Debug log
+                admin_check = supabase.from_('adminrole').select('user_id').eq('user_id', user_id).execute()  # Corrected table name
+                print(f"Admin check query result: {admin_check.data}")  # Detailed logging
+
+                if admin_check.data:
+                    # If the user is found in the AdminRole table, they are an admin
+                    session.pop('user_id', None)  # Clear specific session data
+                    session.pop('role', None)  # Clear specific session data
+                    print("User is admin, redirecting to dashboard")  # Debug log
+                    session['user_id'] = user_id
+                    session['role'] = 'admin'
+                    return redirect(url_for('dashboard'))
                 else:
-                    return 'Access denied'
-            return 'Role not found'
-        else:
-            return 'Login failed'
+                    print("User is not admin")  # Debug log
+                    return render_template('login.html', error='Access denied. You are not an admin.')
+
+            else:
+                print("Login failed")  # Debug log
+                return render_template('login.html', error='Login failed, please try again.')
+        except Exception as e:
+            print(f"Exception occurred: {str(e)}")  # Debug log
+            return render_template('login.html', error=f'An unexpected error occurred: {str(e)}')
+
     return render_template('login.html')
 
 @app.route('/dashboard')
 def dashboard():
-    if 'role' in session and session['role'] == 'admin':
-        return render_template('admin_dashboard.html')
+    print("Dashboard route accessed")  # Debug log
+    if 'user_id' in session and session.get('role') == 'admin':
+        try:
+            # Retrieve users' data for the admin dashboard
+            users_data = supabase.table('users').select('*').execute()
+            users = users_data.data if users_data.data else []
+            return render_template('admin_dashboard.html', users=users)
+        except Exception as e:
+            print(f"Exception occurred while fetching users: {str(e)}")  # Debug log
+            return render_template('dashboard.html', error=f"An error occurred: {str(e)}")
     else:
-        return redirect('/login')
+        print("User not allowed to access dashboard")  # Debug log
+        return redirect(url_for('login'))
+
 
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
-    session.pop('role', None)
-    return redirect('/login')
+    session.clear()  # Ensure the session is fully cleared
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
