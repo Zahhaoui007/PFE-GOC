@@ -609,3 +609,44 @@ class _LiveState extends State<Live> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Ajout de la page "Commandes"
+class Commande extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildImageButton(context, 'images/water-tap.png', 'Water Tap'),
+              _buildImageButton(context, 'images/aeration.png', 'Aeration'),
+            ],
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              // Action de confirmation
+            },
+            child: Text('Confirmer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageButton(BuildContext context, String imagePath, String label) {
+    return GestureDetector(
+      onTap: () {
+        // Action sur le choix de l'utilisateur
+      },
+      child: Column(
+        children: [
+          Image.asset(imagePath, width: 100, height: 100),
+          Text(label),
+        ],
+      ),
+    );
+  }
+}

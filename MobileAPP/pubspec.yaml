@@ -23,6 +23,8 @@ flutter:
   uses-material-design: true
   assets:
     - images/logo.png
+    - images/water.png
+    - images/aeration.png
     - images/co2.png
     - images/o2.png
     - images/cold.png
