@@ -129,7 +129,154 @@ class FirstPage extends StatelessWidget {
     );
   }
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class ExportDataPage extends StatefulWidget {
+  @override
+  _ExportDataPageState createState() => _ExportDataPageState();
+}
+
+class _ExportDataPageState extends State<ExportDataPage> {
+  String selectedMonth = 'Janvier';
+  int selectedYear = DateTime.now().year;
+
+  final List<String> months = [
+    'Janvier',
+    'Février',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juillet',
+    'Août',
+    'Septembre',
+    'Octobre',
+    'Novembre',
+    'Décembre'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 255, 255, 255), // Couleur du thème
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // En-tête avec le logo
+            Center(
+              child: Column(
+                children: [
+                  Image.asset(
+                    'images/logo.png',
+                    height: 100,
+                    fit: BoxFit.contain,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Exporter vos données',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
+            // Carte pour le menu déroulant
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownButtonFormField<String>(
+                  value: selectedMonth,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedMonth = value ?? months.first;
+                    });
+                  },
+                  items: months.map((month) {
+                    return DropdownMenuItem<String>(
+                      value: month,
+                      child: Text(month),
+                    );
+                  }).toList(),
+                  decoration: InputDecoration(
+                    labelText: 'Sélectionnez un mois',
+                    icon: Icon(Icons.calendar_month),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            // Carte pour le champ de saisie de l'année
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Entrez l\'année',
+                    icon: Icon(Icons.calendar_today),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      final intValue = int.tryParse(value);
+                      if (intValue != null) {
+                        selectedYear = intValue;
+                      }
+                    });
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            // Bouton d'exportation
+            ElevatedButton(
+              onPressed: () {
+                exportData(selectedMonth, selectedYear);
+              },
+              child: Text(
+                'Exporter',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold, // Texte en gras
+                      color: Colors.black, // Couleur du texte
+                    ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    const Color.fromARGB(255, 18, 100, 21), // Couleur du bouton
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                textStyle: TextStyle(fontSize: 15, color: Colors.black),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> exportData(String month, int year) async {
+    try {
+      // Logique pour exporter les données en fonction du mois et de l'année choisis
+      print('Exporter les données pour $month $year');
+      // Ajoute ici une logique d'exportation réelle, par exemple avec une requête HTTP
+      // final response = await yourExportFunction(month, year);
+      // if (response.success) {
+      //   // Données exportées avec succès
+      // } else {
+      //   // Affiche une erreur à l'utilisateur
+      // }
+    } catch (e) {
+      print('Erreur lors de l\'exportation des données : $e');
+    }
+  }
+}
 
 class Dashboard extends StatelessWidget {
   @override
@@ -149,7 +296,7 @@ class Dashboard extends StatelessWidget {
           ),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Tableau analytique'),
+              Tab(text: 'Analytique'),
               Tab(text: 'Live'),
               Tab(text: 'Commandes'),
             ],
@@ -171,12 +318,18 @@ class Dashboard extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.file_download),
                 title: Text('Exporté les données'),
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ExportDataPage()),
+                  );
+                },
               ),
               ListTile(
-                  leading: Icon(Icons.supervised_user_circle),
-                  title: Text('Profile'),
-                  onTap: () {}),
+                leading: Icon(Icons.supervised_user_circle),
+                title: Text('Profile'),
+                onTap: () {},
+              ),
               ListTile(
                 leading: Icon(Icons.settings),
                 title: Text('Paramètres'),
@@ -199,7 +352,8 @@ class Dashboard extends StatelessWidget {
           children: [
             AnalyticDashboard(),
             Live(),
-            Container(),
+            Container(), // Remplace ce Container par le widget souhaité pour "Commandes"
+            //Commande(),
           ],
         ),
       ),
@@ -372,7 +526,7 @@ class _LiveState extends State<Live> {
                 ),
               ],
             ),
-            SizedBox(height: 90),
+            SizedBox(height: 15),
             Center(
               child: Stack(
                 alignment: Alignment.center,
