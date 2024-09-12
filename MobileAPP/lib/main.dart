@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -352,8 +353,7 @@ class Dashboard extends StatelessWidget {
           children: [
             AnalyticDashboard(),
             Live(),
-            Container(), // Remplace ce Container par le widget souhaité pour "Commandes"
-            //Commande(),
+            Commande(), // Remplace ce Container par le widget souhaité pour "Commandes"
           ],
         ),
       ),
@@ -369,71 +369,58 @@ class AnalyticDashboard extends StatelessWidget {
       child: Column(
         children: <Widget>[
           DateSelector(),
-          GraphCard(title: 'CO2', color: Colors.blue),
-          GraphCard(title: 'Humidité', color: Colors.lightBlue),
-          GraphCard(title: 'O2', color: Colors.lightBlue),
-          GraphCard(title: 'Température', color: Colors.lightBlue),
-        ],
-      ),
-    );
-  }
-}
-
-class DateSelector extends StatefulWidget {
-  @override
-  _DateSelectorState createState() => _DateSelectorState();
-}
-
-class _DateSelectorState extends State<DateSelector> {
-  DateTime selectedDate = DateTime.now(); // Default date is today's date
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2000), // Adjust this to the earliest allowed date
-      lastDate: DateTime(2100), // Adjust this to the latest allowed date
-    );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          InkWell(
-            onTap: () => _selectDate(context),
-            child: Center(
-              child: Text(
-                '${selectedDate.toLocal()}'
-                    .split(' ')[0], // Formats the date to YYYY-MM-DD
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
+          GraphCard(
+            title: 'CO2',
+            color: Colors.blue,
+            chartData: _getChartData([30, 40, 50, 60, 70, 80, 90]),
           ),
-          Spacer(),
-          IconButton(
-            icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-            onPressed: () => _selectDate(context),
+          GraphCard(
+            title: 'Humidité',
+            color: Colors.lightBlue,
+            chartData: _getChartData([60, 55, 70, 65, 80, 75, 70]),
+          ),
+          GraphCard(
+            title: 'O2',
+            color: Colors.lightBlue,
+            chartData: _getChartData([21, 21.5, 20.5, 22, 21, 21.2, 21.3]),
+          ),
+          GraphCard(
+            title: 'Température',
+            color: Colors.lightBlue,
+            chartData: _getChartData([22, 23, 21, 22.5, 23.5, 24, 22]),
           ),
         ],
       ),
     );
   }
+
+  List<ChartSeries> _getChartData(List<double> values) {
+    List<DataPoint> data =
+        values.asMap().entries.map((e) => DataPoint(e.key, e.value)).toList();
+    return [
+      LineSeries<DataPoint, int>(
+        dataSource: data,
+        xValueMapper: (DataPoint dp, _) => dp.x,
+        yValueMapper: (DataPoint dp, _) => dp.y,
+        color: Colors.blue,
+      ),
+    ];
+  }
+}
+
+class DataPoint {
+  DataPoint(this.x, this.y);
+  final int x;
+  final double y;
 }
 
 class GraphCard extends StatelessWidget {
   final String title;
   final Color color;
+  final List<ChartSeries> chartData;
 
-  GraphCard({required this.title, required this.color});
+  GraphCard(
+      {required this.title, required this.color, required this.chartData});
 
   @override
   Widget build(BuildContext context) {
@@ -454,9 +441,9 @@ class GraphCard extends StatelessWidget {
                 color: color.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Center(
-                child: Text('Graph data will be here',
-                    style: TextStyle(color: Colors.white)),
+              child: SfCartesianChart(
+                primaryXAxis: CategoryAxis(),
+                series: chartData,
               ),
             ),
           ],
@@ -466,6 +453,54 @@ class GraphCard extends StatelessWidget {
   }
 }
 
+class DateSelector extends StatefulWidget {
+  @override
+  _DateSelectorState createState() => _DateSelectorState();
+}
+
+class _DateSelectorState extends State<DateSelector> {
+  DateTime selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          InkWell(
+            onTap: () => _selectDate(context),
+            child: Center(
+              child: Text(
+                '${selectedDate.toLocal()}'.split(' ')[0],
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          Spacer(),
+          IconButton(
+            icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+            onPressed: () => _selectDate(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Live extends StatefulWidget {
@@ -609,41 +644,78 @@ class _LiveState extends State<Live> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Ajout de la page "Commandes"
-class Commande extends StatelessWidget {
+
+class Commande extends StatefulWidget {
+  @override
+  _CommandeState createState() => _CommandeState();
+}
+
+class _CommandeState extends State<Commande> {
+  String _selectedOption = ''; // Variable pour stocker l'option sélectionnée
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Spacer(flex: 1), // Espace pour pousser les éléments vers le haut
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildImageButton(context, 'images/water-tap.png', 'Water Tap'),
+              _buildImageButton(context, 'images/water.png', 'Water Tap'),
               _buildImageButton(context, 'images/aeration.png', 'Aeration'),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 15),
+          if (_selectedOption
+              .isNotEmpty) // Affiche la confirmation si une option est sélectionnée
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Vous avez choisi : $_selectedOption',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          SizedBox(height: 15),
           ElevatedButton(
             onPressed: () {
               // Action de confirmation
+              if (_selectedOption.isNotEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text('Confirmation : $_selectedOption sélectionné!'),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Veuillez sélectionner une option avant de confirmer.'),
+                  ),
+                );
+              }
             },
             child: Text('Confirmer'),
           ),
+          Spacer(flex: 2), // Espace pour ajuster le bas de la page
         ],
       ),
     );
   }
 
-  Widget _buildImageButton(BuildContext context, String imagePath, String label) {
+  Widget _buildImageButton(
+      BuildContext context, String imagePath, String label) {
     return GestureDetector(
       onTap: () {
-        // Action sur le choix de l'utilisateur
+        setState(() {
+          _selectedOption = label; // Met à jour l'option sélectionnée
+        });
       },
       child: Column(
         children: [
-          Image.asset(imagePath, width: 100, height: 100),
+          Image.asset(imagePath, width: 50, height: 50),
+          SizedBox(height: 15),
           Text(label),
         ],
       ),

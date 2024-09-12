@@ -21,6 +21,34 @@ app.secret_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 def home():
     return redirect(url_for('login'))
 
+@app.route('/predict', methods=['GET', 'POST'])
+def predict():
+    if request.method == 'POST':
+        try:
+            apple_type = request.form['apple_type']
+            quantity_kg = float(request.form['quantity_kg'])
+            
+            # Encode apple type
+            encoded_apple_type = label_encoder.transform([apple_type])[0]
+            
+            # Create a DataFrame
+            input_data = pd.DataFrame([[encoded_apple_type, quantity_kg]], columns=['Apple_Type', 'Quantity_kg'])
+            
+            # Make prediction
+            prediction = model.predict(input_data)
+            response = {
+                'optimal_temperature': prediction[0][0],
+                'optimal_humidity': prediction[0][1],
+                'optimal_co2_percent': prediction[0][2],
+                'optimal_o2_percent': prediction[0][3]
+            }
+            return render_template('result.html', response=response)
+        except Exception as e:
+            return jsonify({'error': str(e)})
+    else:
+        # Render the prediction form on GET request
+        return render_template('index.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print("Login route accessed") 
