@@ -1,21 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('/static/images/3.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: transparent;
+            -webkit-text-stroke: 1px yellow;
+            text-shadow: 0 0 0 #fff;
+            transition: all 250ms;
+            margin: 0; /* Remove default margin */
+        }
+
+        header h1:hover {
+            text-shadow: 4px 4px 0 #fff;
+            transform: translate(-2px, -2px);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .welcome-container {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .welcome-container img {
+            width: 100px; /* Adjust size as needed */
+            height: auto;
+            margin-bottom: 20px; /* Space below the logo */
+        }
+
+        .welcome-container h2 {
+            font-size: 2em;
+            color: #fff;
+            margin: 0 0 10px 0; /* Adjusted margin */
+        }
+
+        .welcome-container p {
+            font-size: 1.2em;
+            color: #fff;
+            margin: 0 0 20px 0; /* Adjusted margin */
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .button-container .button, .button-container .logout {
+            padding: 15px 30px;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button-container .button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .button-container .button:hover {
+            background-color: #45a049;
+        }
+
+        .button-container .logout {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .button-container .logout:hover {
+            background-color: #e53935;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Admin Panel</h1>
-    <a href="/logout">Logout</a>
-    <button onclick="location.href='/predict'">Prediction</button>
-    <h2>User List</h2>
-    <ul>
-    {% if users %}
-        {% for user in users %}
-            <li>{{ user.email }} - {{ user.role }}</li>
-        {% endfor %}
-    {% else %}
-        <li>No users found.</li>
-    {% endif %}
-    </ul>
+    <main>
+        <div class="welcome-container">
+            <img src="/static/images/logo.png" alt="App Logo">
+            <header>
+                <h1>{{ user_name }}!</h1>
+            </header>
+            <h2>Welcome to the Admin Dashboard</h2>
+            <p>Here you can perform predictions and manage settings.</p>
+            <div class="button-container">
+                <a href="/predict" class="button">Go to Prediction</a>
+                <a href="/logout" class="logout">Logout</a>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <a href="/logout">Logout</a>
+    </footer>
 </body>
 </html>
