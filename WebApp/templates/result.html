@@ -8,41 +8,45 @@
             margin: 0;
             padding: 20px;
             background-image: url('/static/images/3.jpg');
-
+            display: flex;
+            justify-content: center; /* Centrer horizontalement */
+            align-items: center;    /* Centrer verticalement */
+            height: 100vh;          /* Utiliser toute la hauteur de la vue */
         }
         .results-container {
             background: #f4f4f4;
-            padding: 20px;
+            padding: 50px; /* Augmenter encore plus le padding pour plus d'espace interne */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Centrer le texte à l'intérieur */
+            max-width: 800px; /* Agrandir la largeur maximale du conteneur */
+            width: 100%; /* Le conteneur prendra toute la largeur disponible jusqu'à 800px */
+        }
+        h1 {
+            font-size: 3em; /* Agrandir la taille du titre */
         }
         .results-container p {
-            margin: 10px 0;
+            font-size: 1.5em; /* Augmenter la taille de la police des paragraphes */
+            margin: 15px 0;
         }
         .download-button {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 15px 30px; /* Agrandir les boutons */
+            font-size: 1.2em; /* Augmenter la taille du texte dans les boutons */
             background-color: #2196F3;
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
+            margin-top: 20px;
         }
         .download-button:hover {
             background-color: #0b79d0;
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
         }
         .button-back {
             background-color: #f44336; /* Couleur pour le bouton 'Go Back' */
         }
         .button-back:hover {
             background-color: #c62828; /* Couleur pour le bouton 'Go Back' au survol */
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
         }
     </style>
 </head>
@@ -54,7 +58,7 @@
         <p>Optimal CO2 Percentage (%): {{ response['optimal_co2_percent'] }}</p>
         <p>Optimal O2 Percentage (%): {{ response['optimal_o2_percent'] }}</p>
         <a href="{{ url_for('generate_pdf') }}" class="download-button">Download Results as PDF</a>
-        <a href="/" class="download-button">Go Back</a>
+        <a href="/" class="download-button button-back">Go Back</a>
     </div>
 </body>
 </html>
